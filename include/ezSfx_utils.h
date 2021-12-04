@@ -1,5 +1,5 @@
-#ifndef _EZGFX_UTILS_H_
-#define _EZGFX_UTILS_H_
+#ifndef _EZSFX_UTILS_H_
+#define _EZSFX_UTILS_H_
 
 
 #include <stdlib.h>
@@ -93,4 +93,4 @@
 
 
 
-#endif /* ezGfx_utils_h */
+#endif /* ezSfx_utils_h */

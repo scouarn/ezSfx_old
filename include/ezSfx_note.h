@@ -7,13 +7,12 @@
 
 
 typedef struct {
-	EZ_Oscillator_t oscillator;
-	
-	double startTime;
-	double endTime;
-	double length;
-
+	EZ_Oscillator_t oscillator;	
+	double osciParam; 
 	double pitch;
+
+	double length;
+	double amp;
 
 	double vibrato;
 	double vibratoAmp;
@@ -31,7 +30,8 @@ typedef struct {
 
 } EZ_Note_t;
 
-void EZ_sfx_play(EZ_Note_t* note); /* add note on the queue */
+void EZ_note_play(EZ_Note_t* note); /* add note on the queue */
+EZ_Sample_t EZ_note_output(double time, int channel); /* add in the callback */
 
 
 

@@ -1,5 +1,5 @@
 #include "ezSfx_oscillator.h"
-#include "ezGfx_utils.h"
+#include "ezSfx_utils.h"
 #include <math.h>
 
 
