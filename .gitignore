@@ -1,0 +1,10 @@
+*tar.gz
+*.zip
+*.o
+*.so
+*.wav
+.bak/*
+*.exe
+*.dll
+bin/*
+System Volume Information
