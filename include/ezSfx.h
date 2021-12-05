@@ -7,6 +7,6 @@
 #include "ezSfx_oscillator.h"
 #include "ezSfx_pcm.h"
 #include "ezSfx_sample.h"
-#include "ezSfx_utils.h"
+#include "ezGfx_utils.h"
 
 #endif /* ezSfx_h */

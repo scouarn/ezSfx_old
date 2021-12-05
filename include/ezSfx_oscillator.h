@@ -5,11 +5,11 @@
 
 typedef double (*EZ_Oscillator_t) (double time, double freq, double param);
 
-double EZ_sfx_fastSine(double time, double freq, double p);
-double EZ_sfx_sine    (double time, double freq, double p);
-double EZ_sfx_square  (double time, double freq, double p);
-double EZ_sfx_triangle(double time, double freq, double p);
-double EZ_sfx_sawtooth(double time, double freq, double p);
+double EZ_osc_fastSine(double time, double freq, double p);
+double EZ_osc_sine    (double time, double freq, double p);
+double EZ_osc_square  (double time, double freq, double p);
+double EZ_osc_triangle(double time, double freq, double p);
+double EZ_osc_sawtooth(double time, double freq, double p);
 
 
 

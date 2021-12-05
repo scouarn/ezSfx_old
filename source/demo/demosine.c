@@ -4,7 +4,7 @@
 #include <stdlib.h>
 
 EZ_Sample_t callback(double time, int channel) {
-	return SAMPLE_MAX * 0.5 * EZ_sfx_sine(time, 440, 0);
+	return SAMPLE_MAX * 0.5 * EZ_osc_sine(time, 440, 0);
 }
 
 

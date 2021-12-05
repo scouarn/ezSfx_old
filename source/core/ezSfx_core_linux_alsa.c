@@ -1,5 +1,5 @@
 #include "ezSfx_core.h"
-#include "ezSfx_utils.h"
+#include "ezGfx_utils.h"
 
 #include <pthread.h>
 #include <string.h>
@@ -80,7 +80,8 @@ void EZ_sfx_init(int rate, int chans, int nbblocks, int size) {
 
 }
 
-void* sfxThread(void* arg) {
+
+static void* sfxThread(void* arg) {
 	/* /!\ sample vs "frame" trickery :
 	 * A frame is two samples with two channels */
 

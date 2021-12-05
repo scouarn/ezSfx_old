@@ -9,8 +9,12 @@ TODO
 
 ## Important
 
+* ALSA implementation blocking other sound inputs
 * load / save WAV
+* wav audio player demo
 * note demo
+* windows implementation
+* Samples to seconds / seconds to samples macros
 
 
 ## Misc 

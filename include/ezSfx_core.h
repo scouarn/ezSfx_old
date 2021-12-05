@@ -13,8 +13,9 @@
 */
 
 
-#ifndef EZSFX_CORE
-#define EZSFX_CORE
+#ifndef _EZSFX_CORE_H_
+#define _EZSFX_CORE_H_
+
 
 #include "ezSfx_sample.h"
 
@@ -31,4 +32,5 @@ void EZ_sfx_setCallback_sample( EZ_Sample_t (*func) (double time, int channel) )
 
 double EZ_sfx_getTime();
 	
-#endif
+
+#endif /* ezSfx_core_h */
