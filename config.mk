@@ -6,11 +6,11 @@ ifeq ($(OS),Windows_NT)
 	
 	CC := gcc
 
-	LIBS :=
+	LIBS := -lwinmm
 	OBJFLAGS := -c -DBUILD_DLL
 	LIBFLAGS := -shared
 
-	CORE := ezSfx_core_win
+	CORE := ezSfx_core_win_mme
 	LIB := bin/libezsfx.dll
 
 	forceremove = del /F /Q $(subst /,\\, $(1))

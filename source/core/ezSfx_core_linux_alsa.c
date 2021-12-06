@@ -1,44 +1,35 @@
-#include "ezSfx_core.h"
-#include "ezGfx_utils.h"
+#include "ezSfx_core_common.h"
 
 #include <pthread.h>
-#include <string.h>
-#include <stdbool.h>
-
 #include <alsa/asoundlib.h>
 
 
 /* App */
 static pthread_t thread;
 static void* sfxThread(void* arg);
-static EZ_Sample_t (*callback) (double time, int channel); 
 
-/* Device IO */
+/* Audio context */
 static snd_pcm_t *device;
+static const char* deviceName = "pulse"; /* default */
 
-/* Time */
-static volatile bool running;
-static double globalTime;
-
-/* Sound config */
-static int sampleRate;
-static int channels;
-static int queueLength;
-static int blockSize;
+/* /!\ sample vs "frame" trickery :
+ * A frame is two samples with two channels */
 
 
-void EZ_sfx_setCallback_sample( EZ_Sample_t (*func) (double, int) ) {
-	callback = func;
-}
+void EZ_sfx_start(const char* device, unsigned int rate, unsigned int chans, unsigned int size, unsigned int length) {
 
-double EZ_sfx_getTime() {
-	return globalTime;
-}
+	if (device)
+		deviceName = device;
 
-void EZ_sfx_start() {
+	sampleRate  = rate;
+	channels    = chans;
+	blockSize   = size;
+	queueLength = length;
+
 	running = true;
 	pthread_create(&thread, NULL, &sfxThread, NULL);
 }
+
 
 void EZ_sfx_stop()  {
 	running = false;
@@ -49,102 +40,87 @@ void EZ_sfx_join()  {
 }
 
 
-void EZ_sfx_init(int rate, int chans, int nbblocks, int size) {
 
-		sampleRate  = rate;
-		channels    = chans;
-		blockSize   = size;
-		queueLength = nbblocks;
+static void renderBlock(EZ_Sample_t* block) {
 
+	/* render the block */
+	EZ_Sample_t *current = block;					 /* where the data is */
+	snd_pcm_uframes_t frames = blockSize / channels; /* number of frames left to write */
 
-		/* init alsa  */
-		/* https://github.com/OneLoneCoder/olcPixelGameEngine/blob/master/Extensions/olcPGEX_Sound.h */
+	while (frames > 0) {
 
-		EZ_assert(
-			snd_pcm_open(&device, "default", SND_PCM_STREAM_PLAYBACK, 0) >= 0, 
-			"Couldn't open sound device"
-		);
+		int written = snd_pcm_writei(device, current, frames);
 
+		if (written > 0) {
+			current += written * channels;
+			frames  -= written;
+		}
 
-		snd_pcm_hw_params_t *params;
-		snd_pcm_hw_params_alloca(&params);
-		snd_pcm_hw_params_any(device, params);
+		else if (written == -EPIPE) { /* an underrun occured, prepare the device for more data */
+			snd_pcm_prepare(device);
+			EZ_warning("Audio underrun");
+		}
 
-		snd_pcm_hw_params_set_access(device, params, SND_PCM_ACCESS_RW_INTERLEAVED);
-		snd_pcm_hw_params_set_format(device, params, SND_PCM_FORMAT_S16_LE);
-		snd_pcm_hw_params_set_rate(device, params, sampleRate, 0);
-		snd_pcm_hw_params_set_channels(device, params, channels);
-		snd_pcm_hw_params_set_period_size(device, params, blockSize, 0);
-		snd_pcm_hw_params_set_periods(device, params, queueLength, 0);
-		snd_pcm_hw_params(device, params);
+		else {
+			EZ_warning("Couldn't write audio");
+		}
 
+	}
 }
 
 
 static void* sfxThread(void* arg) {
-	/* /!\ sample vs "frame" trickery :
-	 * A frame is two samples with two channels */
 
 	pthread_detach(pthread_self());
 
-	globalTime = 0.0;
-	double dt = 1.0 / sampleRate;
 
+	/* init alsa  */
+	/* https://github.com/OneLoneCoder/olcPixelGameEngine/blob/master/Extensions/olcPGEX_Sound.h */
+	/* https://soundprogramming.net/programming/alsa-tutorial-1-initialization/ */
+	/* https://www.alsa-project.org/alsa-doc/alsa-lib/group___p_c_m___h_w___params.html#ga7242d7045ae23a9ae736c191030c25e8 */
 
-	/* init block */
-	EZ_Sample_t* block = malloc( blockSize * sizeof(EZ_Sample_t) );
+	EZ_assert(
+		snd_pcm_open(&device, deviceName, SND_PCM_STREAM_PLAYBACK, 0) >= 0, 
+		"Couldn't open sound device"
+	);
+
+	snd_pcm_hw_params_t *params;
+	snd_pcm_hw_params_malloc(&params);
+	snd_pcm_hw_params_any(device, params);
+
+	snd_pcm_hw_params_set_access(device, params, SND_PCM_ACCESS_RW_INTERLEAVED);
+	snd_pcm_hw_params_set_channels(device, params, channels);
+	snd_pcm_hw_params_set_rate_resample(device, params, 1); /* enabled */
+	snd_pcm_hw_params_set_rate(device, params, sampleRate, 0);
+	snd_pcm_hw_params_set_format(device, params, SND_PCM_FORMAT_S16_LE);
+	snd_pcm_hw_params_set_period_size(device, params, blockSize, 0);
+	snd_pcm_hw_params_set_periods(device, params, queueLength, 0);
+
+	snd_pcm_hw_params(device, params);
+	snd_pcm_prepare(device);
 	snd_pcm_start(device);
 
 
+	/* init block */
+	EZ_Sample_t* block = malloc( channels * blockSize * sizeof(EZ_Sample_t) );
+
+	globalTime = 0.0;
+
 	/* main loop */
 	while (running) {
-		int i, chan;
-
-		/* fill the block with user data */
-		if (callback) 
-		for (i = 0; i < blockSize; i += channels) {
-
-			for (chan = 0; chan < channels; chan++)
-				block[i + chan] = callback(globalTime, chan);
-
-			globalTime += dt;
-		}
-
-		else globalTime += blockSize / sampleRate;
-
-
-
-		/* render the block */
-		EZ_Sample_t *current = block;
-		snd_pcm_uframes_t frames = blockSize / channels;
-
-		while (frames > 0) {
-
-			int rc = snd_pcm_writei(device, current, frames);
-
-			if (rc > 0) {
-				current   += rc * channels;
-				frames -= rc;
-			}
-
-			if (rc == -EAGAIN) continue;
-			if (rc == -EPIPE) /* an underrun occured, prepare the device for more data */
-				snd_pcm_prepare(device);
-
-		}
-
+		
+		fillBlock(block);
+		renderBlock(block);
 
 	}
 
-
+	snd_pcm_hw_params_free(params);
 	snd_pcm_drain(device);
 	snd_pcm_close(device);
 	free(block);
 
-
 	pthread_exit(NULL);
 	return NULL;
-
 }
 
 

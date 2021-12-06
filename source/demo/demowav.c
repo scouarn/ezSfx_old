@@ -24,11 +24,11 @@ int main(int argc, char** argv) {
 
 	audio = EZ_pcm_loadWAV(argv[1]);
 
-	EZ_sfx_setCallback_sample(callback);
-	EZ_sfx_init_default();
 
-	EZ_sfx_start();
+	EZ_sfx_setCallback_sample(callback);
+	EZ_sfx_start_default();
 	EZ_sfx_join();
+
 
 	return 0;
 }
