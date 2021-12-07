@@ -15,12 +15,11 @@ typedef struct node_t {
 } node_t;
 
 
-static node_t  list_root = {0};
-static node_t* list_head = &list_root;
+static node_t* list_head = NULL;
 
 
 /* add a note to the queue */
-void EZ_sfx_play(EZ_Note_t* note) {
+void EZ_note_play(EZ_Note_t* note) {
 
 	node_t* newNode = malloc( sizeof(node_t) );
 	double time = EZ_sfx_getTime();
@@ -36,15 +35,15 @@ void EZ_sfx_play(EZ_Note_t* note) {
 }
 
 
-EZ_Sample_t EZ_note_output(double time, int channel) {
+double EZ_note_output(double time, int channel) {
 
 	double sf = 0.0;
 	int nb_notes = 0;
 
-	node_t *node = list_head;
+	node_t *node = list_head, *prev = NULL;
 
 
-	while (node->next != NULL) {
+	while (node != NULL) {
 
 		sf += node->note->amp * node->note->oscillator(time, node->note->pitch, node->note->osciParam);
 		nb_notes ++;
@@ -55,19 +54,25 @@ EZ_Sample_t EZ_note_output(double time, int channel) {
 
 			node_t* next = node->next;
 
-			node->next = next->next;
-			node->note = next->note;
+			free(node);
 
-			free(next);
+			if (prev == NULL)
+				list_head = next;
 
+			else
+				prev->next = next;
+
+			node = next;
+			
 		}
 		else {
+			prev = node;
 			node = node->next;
 		}
 
 
 	}
 
-	/* nb_notes division : prevent saturation */
-	return (EZ_Sample_t)(sf / nb_notes * SAMPLE_MAX);
+	/* nb_notes division : prevent saturation (using a log ?) */
+	return (sf / nb_notes);
 }

@@ -31,7 +31,7 @@ typedef struct {
 } EZ_Note_t;
 
 void EZ_note_play(EZ_Note_t* note); /* add note on the queue */
-EZ_Sample_t EZ_note_output(double time, int channel); /* add in the callback */
+double EZ_note_output(double time, int channel); /* add in the callback */
 
 
 
