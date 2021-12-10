@@ -1,5 +1,5 @@
 #include "ezSfx_core.h"
-#include "ezGfx_utils.h"
+#include "ezErr.h"
 
 #include <string.h>
 #include <stdbool.h>

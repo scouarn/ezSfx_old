@@ -5,7 +5,7 @@
 
 double EZ_osc_sine(double time, double freq, double p) {
 	
-	return sin(time*freq*PI*2.0);
+	return sin(time*freq*TWO_PI);
 }
 
 

@@ -69,7 +69,7 @@ static DWORD WINAPI sfxThread(LPVOID lpParam) {
 	globalTime = 0.0;
 
 	HWAVEOUT device;
-	EZ_assert( 
+	ERR_assert( 
 		MMSYSERR_NOERROR == waveOutOpen(&device, WAVE_MAPPER, &audioInfo, (DWORD_PTR)waveOutProc, (DWORD_PTR)&nbFreeBlocks, CALLBACK_FUNCTION),
 		"Couldn't init audio device"
 	);

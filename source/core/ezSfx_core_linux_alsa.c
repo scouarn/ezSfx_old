@@ -58,11 +58,11 @@ static void renderBlock(EZ_Sample_t* block) {
 
 		else if (written == -EPIPE) { /* an underrun occured, prepare the device for more data */
 			snd_pcm_prepare(device);
-			EZ_warning("Audio underrun");
+			ERR_warning("Audio underrun");
 		}
 
 		else {
-			EZ_warning("Couldn't write audio");
+			ERR_warning("Couldn't write audio");
 		}
 
 	}
@@ -79,7 +79,7 @@ static void* sfxThread(void* arg) {
 	/* https://soundprogramming.net/programming/alsa-tutorial-1-initialization/ */
 	/* https://www.alsa-project.org/alsa-doc/alsa-lib/group___p_c_m___h_w___params.html#ga7242d7045ae23a9ae736c191030c25e8 */
 
-	EZ_assert(
+	ERR_assert(
 		snd_pcm_open(&device, deviceName, SND_PCM_STREAM_PLAYBACK, 0) >= 0, 
 		"Couldn't open sound device"
 	);

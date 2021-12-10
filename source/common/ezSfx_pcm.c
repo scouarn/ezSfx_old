@@ -1,5 +1,5 @@
 #include "ezSfx_pcm.h"
-#include "ezGfx_utils.h"
+#include "ezErr.h"
 #include <stdlib.h>
 
 
@@ -71,7 +71,7 @@ EZ_PCM_t* EZ_pcm_loadWAV(const char* fname) {
 	FILE *file = fopen(fname,"rb");
 
 	if (file == NULL) {
-		EZ_throw("Couldn't open file", fname);
+		ERR_warning("Couldn't open file %s", fname);
 		return NULL;
 	}
 
@@ -81,7 +81,7 @@ EZ_PCM_t* EZ_pcm_loadWAV(const char* fname) {
 	fread(&riff, sizeof(struct riff_header), 1, file);
 
 	if (riff.ChunkID != RIFF_MAGIC_NUMBER || riff.Format != WAVE_MAGIC_NUMBER) {
-		EZ_throw("Wrong magic numbers in riff header", fname);
+		ERR_warning("Wrong magic numbers in riff header of %s", fname);
 		fclose(file);
 
 		return NULL;
@@ -93,35 +93,35 @@ EZ_PCM_t* EZ_pcm_loadWAV(const char* fname) {
 	fread(&fmt, sizeof(struct fmt_subchunk), 1, file);
 
 	if (fmt.SubchunkID != fmt__MAGIC_NUMBER) {
-		EZ_throw("Wrong magic number in fmt chunk", fname);
+		ERR_warning("Wrong magic number in fmt chunk of %s", fname);
 		fclose(file);
 
 		return NULL;
 	}
 
 	if (fmt.SubchunkSize != 16 || fmt.AudioFormat != 1) {
-		EZ_throw("Only PCM wave file are supported", fname);
+		ERR_warning("Only PCM wave file are supported %s", fname);
 		fclose(file);
 
 		return NULL;
 	}
 
 	if (fmt.NumChannels == 0) {
-		EZ_throw("This audio file has 0 channels", fname);
+		ERR_warning("This audio file has 0 channels %s", fname);
 		fclose(file);
 
 		return NULL;
 	}
 	
 	if (fmt.SampleRate == 0 || fmt.ByteRate == 0) {
-		EZ_throw("This audio file has a sample rate of 0", fname);
+		ERR_warning("This audio file has a sample rate of 0 %s", fname);
 		fclose(file);
 
 		return NULL;
 	}
 
 	if (fmt.BitsPerSample != 16) {
-		EZ_throw("Only 16bits signed integer audio is supported", fname);
+		ERR_warning("Only 16bits signed integer audio is supported %s", fname);
 		fclose(file);
 
 		return NULL;
@@ -133,14 +133,14 @@ EZ_PCM_t* EZ_pcm_loadWAV(const char* fname) {
 	fread(&data, sizeof(struct data_subchunk), 1, file);
 
 	if (data.SubchunkID != data_MAGIC_NUMBER) {
-		EZ_throw("Wrong magic number in data section",fname);
+		ERR_warning("Wrong magic number in data section of %s",fname);
 		fclose(file);
 
 		return NULL;
 	}
 
 	if (data.SubchunkSize == 0) {
-		EZ_throw("This audio file has no samples", fname);
+		ERR_warning("This audio file has no samples %s", fname);
 		fclose(file);
 
 		return NULL;
@@ -172,7 +172,7 @@ void EZ_save_WAV(EZ_PCM_t* arr, const char* fname) {
 	FILE *file = fopen(fname,"wb");
 
 	if (file == NULL) {
-		EZ_throw("Couldn't save file", fname);
+		ERR_warning("Couldn't save file %s", fname);
 		return;
 	}
 
