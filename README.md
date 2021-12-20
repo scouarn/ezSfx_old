@@ -4,6 +4,8 @@ ezSfx
 Cross-platform sound engine.
 
 
+
+
 TODO
 ====
 
@@ -21,7 +23,7 @@ TODO
 
 
 ## Platforms
-
+* no alsa
 * wasm support
 
 
